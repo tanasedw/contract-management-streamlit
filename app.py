@@ -212,7 +212,9 @@ def get_token():
         "client_secret": CLIENT_SECRET,
         "scope":         "https://storage.azure.com/.default",
     })
-    res.raise_for_status()
+    if not res.ok:
+        st.error(f"Token error {res.status_code}: {res.text}")
+        st.stop()
     return res.json()["access_token"]
 
 def storage_options():
