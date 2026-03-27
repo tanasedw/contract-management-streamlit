@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import requests
 import pytz
+import threading
 from deltalake import DeltaTable, write_deltalake
 from datetime import datetime
 
@@ -281,17 +282,9 @@ def load_saved():
             "comment", "new_purchasing_doc_no", "update_at",
         ])
 
-def save_status(doc_no: str, purchaser_status: str, comment: str, new_doc_no: str):
-    opts = storage_options()
+def _save_to_delta(new_row: pd.DataFrame, opts: dict):
+    """Write to Delta Lake — runs in background thread."""
     table_path = f"{ONELAKE_BASE}/gold_manual_contract_status"
-    new_row = pd.DataFrame([{
-        "purchasing_doc_no":     doc_no,
-        "user_status":           "",
-        "purchaser_status":      purchaser_status,
-        "comment":               comment,
-        "new_purchasing_doc_no": new_doc_no,
-        "update_at":             datetime.now(pytz.timezone("Asia/Bangkok")),
-    }])
     try:
         (
             DeltaTable(table_path, storage_options=opts)
@@ -306,8 +299,21 @@ def save_status(doc_no: str, purchaser_status: str, comment: str, new_doc_no: st
             .execute()
         )
     except Exception:
-        # Table doesn't exist yet — create it
         write_deltalake(table_path, new_row, mode="append", storage_options=opts)
+
+def save_status_async(doc_no: str, purchaser_status: str, comment: str, new_doc_no: str):
+    """Build row, fetch token in main thread, then fire background write."""
+    opts = storage_options()  # token must be fetched in main thread
+    new_row = pd.DataFrame([{
+        "purchasing_doc_no":     doc_no,
+        "user_status":           "",
+        "purchaser_status":      purchaser_status,
+        "comment":               comment,
+        "new_purchasing_doc_no": new_doc_no,
+        "update_at":             datetime.now(pytz.timezone("Asia/Bangkok")),
+    }])
+    threading.Thread(target=_save_to_delta, args=(new_row, opts), daemon=True).start()
+    return new_row
 
 # ───────────────────────────────────────────
 # SESSION STATE
@@ -370,25 +376,17 @@ with col_form:
         if new_doc_no and not new_doc_no.isdigit():
             st.error("เลขสัญญาใหม่ต้องเป็นตัวเลขเท่านั้น")
         else:
-            with st.spinner("กำลังบันทึก..."):
-                try:
-                    save_status(doc_no, purchaser_status, comment, new_doc_no)
-                    new_entry = pd.DataFrame([{
-                        "purchasing_doc_no":     doc_no,
-                        "user_status":           "",
-                        "purchaser_status":      purchaser_status,
-                        "comment":               comment,
-                        "new_purchasing_doc_no": new_doc_no,
-                        "update_at":             datetime.now(pytz.timezone("Asia/Bangkok")).replace(tzinfo=None),
-                    }])
-                    df = st.session_state.saved_data
-                    df = df[df["purchasing_doc_no"] != doc_no]
-                    df = pd.concat([new_entry, df], ignore_index=True)
-                    st.session_state.saved_data = df
-                    st.toast(f"Saved — {doc_no}", icon="✅")
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Error: {e}")
+            try:
+                new_entry = save_status_async(doc_no, purchaser_status, comment, new_doc_no)
+                new_entry["update_at"] = new_entry["update_at"].dt.tz_localize(None)
+                df = st.session_state.saved_data
+                df = df[df["purchasing_doc_no"] != doc_no]
+                df = pd.concat([new_entry, df], ignore_index=True)
+                st.session_state.saved_data = df
+                st.toast(f"Saved — {doc_no}", icon="✅")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error: {e}")
 
 # ── RIGHT: TABLE ──
 with col_table:
