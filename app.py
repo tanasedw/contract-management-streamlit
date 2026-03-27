@@ -439,11 +439,12 @@ with col_table:
         ordered_cols = ["purchasing_doc_no"]
         if name_col:
             ordered_cols.append(name_col)
-        ordered_cols += ["purchaser_status", "comment", "new_purchasing_doc_no", "update_at"]
+        ordered_cols += ["user_status", "purchaser_status", "comment", "new_purchasing_doc_no", "update_at"]
         display_df = display_df[[c for c in ordered_cols if c in display_df.columns]]
 
         col_cfg = {
             "purchasing_doc_no":     st.column_config.TextColumn("Doc No"),
+            "user_status":           st.column_config.TextColumn("User Status"),
             "purchaser_status":      st.column_config.TextColumn("Purchaser Status"),
             "comment":               st.column_config.TextColumn("Comment"),
             "new_purchasing_doc_no": st.column_config.TextColumn("เลขสัญญาใหม่"),
