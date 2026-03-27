@@ -294,7 +294,13 @@ def _save_to_delta(new_row: pd.DataFrame, opts: dict):
                 source_alias="s",
                 target_alias="t",
             )
-            .when_matched_update_all()
+            .when_matched_update({
+                "purchaser_status":      "s.purchaser_status",
+                "comment":               "s.comment",
+                "new_purchasing_doc_no": "s.new_purchasing_doc_no",
+                "update_at":             "s.update_at",
+                # user_status is intentionally excluded — managed by email alert
+            })
             .when_not_matched_insert_all()
             .execute()
         )
@@ -380,6 +386,10 @@ with col_form:
                 new_entry = save_status_async(doc_no, purchaser_status, comment, new_doc_no)
                 new_entry["update_at"] = new_entry["update_at"].dt.tz_localize(None)
                 df = st.session_state.saved_data
+                # Preserve existing user_status from email alert
+                existing_row = df[df["purchasing_doc_no"] == doc_no]
+                if not existing_row.empty and "user_status" in existing_row.columns:
+                    new_entry["user_status"] = existing_row.iloc[0]["user_status"]
                 df = df[df["purchasing_doc_no"] != doc_no]
                 df = pd.concat([new_entry, df], ignore_index=True)
                 st.session_state.saved_data = df
