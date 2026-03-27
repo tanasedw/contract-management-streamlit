@@ -283,6 +283,7 @@ def load_saved():
 
 def save_status(doc_no: str, purchaser_status: str, comment: str, new_doc_no: str):
     opts = storage_options()
+    table_path = f"{ONELAKE_BASE}/gold_manual_contract_status"
     new_row = pd.DataFrame([{
         "purchasing_doc_no":     doc_no,
         "user_status":           "",
@@ -292,31 +293,21 @@ def save_status(doc_no: str, purchaser_status: str, comment: str, new_doc_no: st
         "update_at":             datetime.now(pytz.timezone("Asia/Bangkok")),
     }])
     try:
-        existing = DeltaTable(
-            f"{ONELAKE_BASE}/gold_manual_contract_status",
-            storage_options=opts,
-        ).to_pandas()
-        # Handle old schema column name
-        if "updated_timestamp" in existing.columns and "update_at" not in existing.columns:
-            existing = existing.rename(columns={"updated_timestamp": "update_at"})
-        for col in ["comment", "new_purchasing_doc_no"]:
-            if col not in existing.columns:
-                existing[col] = ""
-        existing = existing[existing["purchasing_doc_no"] != doc_no]
-        merged = pd.concat([existing, new_row], ignore_index=True)
-        write_deltalake(
-            f"{ONELAKE_BASE}/gold_manual_contract_status",
-            merged,
-            mode="overwrite",
-            storage_options=opts,
+        (
+            DeltaTable(table_path, storage_options=opts)
+            .merge(
+                source=new_row,
+                predicate="s.purchasing_doc_no = t.purchasing_doc_no",
+                source_alias="s",
+                target_alias="t",
+            )
+            .when_matched_update_all()
+            .when_not_matched_insert_all()
+            .execute()
         )
     except Exception:
-        write_deltalake(
-            f"{ONELAKE_BASE}/gold_manual_contract_status",
-            new_row,
-            mode="append",
-            storage_options=opts,
-        )
+        # Table doesn't exist yet — create it
+        write_deltalake(table_path, new_row, mode="append", storage_options=opts)
 
 # ───────────────────────────────────────────
 # SESSION STATE
