@@ -27,6 +27,7 @@ PURCHASER_STATUS_OPTIONS = [
     "RL - Recommend Letter",
     "OA Created",
     "Cancel OA",
+    "Completed",
 ]
 
 # ───────────────────────────────────────────
