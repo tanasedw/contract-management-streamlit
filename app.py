@@ -344,7 +344,7 @@ if st.session_state.saved_data is None:
         }
         .fl-overlay {
             position: fixed; inset: 0;
-            background: #0e0e0e;
+            background: #F4F0E8;
             z-index: 9999;
             display: flex;
             flex-direction: column;
