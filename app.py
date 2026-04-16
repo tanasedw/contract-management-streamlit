@@ -246,7 +246,7 @@ def storage_options():
 # ───────────────────────────────────────────
 # DATA
 # ───────────────────────────────────────────
-@st.cache_data(ttl=600)
+@st.cache_data(ttl=600, show_spinner=False)
 def load_all_docs():
     opts = storage_options()
     df = (
@@ -257,7 +257,7 @@ def load_all_docs():
     )
     return df
 
-@st.cache_data(ttl=600)
+@st.cache_data(ttl=600, show_spinner=False)
 def load_saved():
     opts = storage_options()
     try:
@@ -323,18 +323,59 @@ def save_status_async(doc_no: str, purchaser_status: str, comment: str, new_doc_
     return new_row
 
 # ───────────────────────────────────────────
-# SESSION STATE
+# UI CONFIG (must be first Streamlit call)
+# ───────────────────────────────────────────
+st.set_page_config(page_title="Contract Status", page_icon="📋", layout="wide")
+apply_style()
+
+# ───────────────────────────────────────────
+# SESSION STATE + CUSTOM LOADING SCREEN
 # ───────────────────────────────────────────
 if "saved_data" not in st.session_state:
     st.session_state.saved_data = None
 if st.session_state.saved_data is None:
+    _loading = st.empty()
+    _loading.markdown(
+        """
+        <style>
+        @keyframes flower-spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        .fl-overlay {
+            position: fixed; inset: 0;
+            background: #0e0e0e;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .fl-flower {
+            font-size: 4rem;
+            display: inline-block;
+            animation: flower-spin 1.2s linear infinite;
+        }
+        .fl-text {
+            color: #e8a347;
+            font-size: 1rem;
+            margin-top: 1.4rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        </style>
+        <div class="fl-overlay">
+            <span class="fl-flower">🌸</span>
+            <div class="fl-text">Wait a moment...</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     st.session_state.saved_data = load_saved()
-
-# ───────────────────────────────────────────
-# UI
-# ───────────────────────────────────────────
-st.set_page_config(page_title="Contract Status", page_icon="📋", layout="wide")
-apply_style()
+    load_all_docs()          # preload so form renders instantly
+    _loading.empty()
 
 st.title("Contract Status")
 st.caption("กรอก Purchaser Status สำหรับแต่ละ Purchasing Doc")
