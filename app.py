@@ -458,6 +458,7 @@ with col_form:
                 df = df[df["purchasing_doc_no"] != doc_no]
                 df = pd.concat([new_entry, df], ignore_index=True)
                 st.session_state.saved_data = df
+                st.session_state.flash_doc_no = doc_no
                 st.toast(f"Saved — {doc_no}", icon="✅")
                 st.rerun()
             except Exception as e:
@@ -511,23 +512,75 @@ with col_table:
         ordered_cols += ["user_status", "purchaser_status", "comment", "new_purchasing_doc_no", "update_at"]
         display_df = display_df[[c for c in ordered_cols if c in display_df.columns]]
 
-        col_cfg = {
-            "purchasing_doc_no":     st.column_config.TextColumn("Doc No"),
-            "user_status":           st.column_config.TextColumn("User Status"),
-            "purchaser_status":      st.column_config.TextColumn("Purchaser Status"),
-            "comment":               st.column_config.TextColumn("Comment"),
-            "new_purchasing_doc_no": st.column_config.TextColumn("เลขสัญญาใหม่"),
-            "update_at":             st.column_config.DatetimeColumn("Updated At", format="YYYY-MM-DD HH:mm"),
+        col_labels = {
+            "purchasing_doc_no":     "Doc No",
+            "user_status":           "User Status",
+            "purchaser_status":      "Purchaser Status",
+            "comment":               "Comment",
+            "new_purchasing_doc_no": "เลขสัญญาใหม่",
+            "update_at":             "Updated At",
         }
         if name_col:
-            col_cfg[name_col] = st.column_config.TextColumn("Contract Name")
+            col_labels[name_col] = "Contract Name"
 
-        st.dataframe(
-            display_df,
-            use_container_width=True,
-            hide_index=True,
-            column_config=col_cfg,
+        flash_doc = st.session_state.get("flash_doc_no", None)
+
+        header_html = "".join(
+            f'<th style="padding:0.5rem 0.75rem; text-align:left; font-size:0.72rem; '
+            f'font-weight:700; text-transform:uppercase; letter-spacing:0.08em; '
+            f'color:#888; border-bottom:1.5px solid #e8e8e8; white-space:nowrap;">'
+            f'{col_labels.get(c, c)}</th>'
+            for c in display_df.columns
         )
+
+        rows_html = ""
+        for _, row in display_df.iterrows():
+            is_flash = (flash_doc and row.get("purchasing_doc_no") == flash_doc)
+            flash_style = (
+                'animation:row-flash 6s ease forwards;'
+                if is_flash else ''
+            )
+            cells = ""
+            for c in display_df.columns:
+                val = row[c]
+                if pd.isna(val) if not isinstance(val, str) else (val == ""):
+                    val = ""
+                elif c == "update_at" and not isinstance(val, str):
+                    try:
+                        val = pd.Timestamp(val).strftime("%Y-%m-%d %H:%M")
+                    except Exception:
+                        val = str(val)
+                else:
+                    val = str(val)
+                cells += (
+                    f'<td style="padding:0.45rem 0.75rem; font-size:0.82rem; '
+                    f'color:#0f0f0f; border-bottom:1px solid #f0f0f0; '
+                    f'white-space:nowrap; max-width:200px; overflow:hidden; '
+                    f'text-overflow:ellipsis;">{val}</td>'
+                )
+            rows_html += f'<tr style="{flash_style}">{cells}</tr>'
+
+        st.markdown(
+            f"""
+            <style>
+            @keyframes row-flash {{
+                0%   {{ background-color: #FFE3E1; }}
+                100% {{ background-color: transparent; }}
+            }}
+            .saved-table {{ width:100%; border-collapse:collapse; font-family:'Inter',sans-serif; }}
+            .saved-table tr:hover td {{ background-color:#fafafa; }}
+            </style>
+            <div style="overflow-x:auto;">
+            <table class="saved-table">
+              <thead><tr>{header_html}</tr></thead>
+              <tbody>{rows_html}</tbody>
+            </table>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        # Clear flash after rendering so it doesn't re-trigger on next interaction
+        st.session_state.flash_doc_no = None
 
     st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
 
