@@ -407,7 +407,7 @@ with col_table:
     st.markdown(
         f"""
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-            <span style="font-size:0.68rem; color:#aaa; text-transform:uppercase; letter-spacing:0.12em; font-weight:600; font-family:'Inter',sans-serif;">
+            <span style="font-size:0.88rem; color:#aaa; text-transform:uppercase; letter-spacing:0.12em; font-weight:600; font-family:'Inter',sans-serif;">
                 รายการที่บันทึกแล้ว
             </span>
             <span style="background:#0f0f0f; color:#fff; font-size:0.72rem; font-weight:600;
