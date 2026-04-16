@@ -459,6 +459,7 @@ with col_form:
                 df = pd.concat([new_entry, df], ignore_index=True)
                 st.session_state.saved_data = df
                 st.session_state.flash_doc_no = doc_no
+                st.session_state.flash_key = int(datetime.now().timestamp() * 1000)
                 st.toast(f"Saved — {doc_no}", icon="✅")
                 st.rerun()
             except Exception as e:
@@ -524,6 +525,8 @@ with col_table:
             col_labels[name_col] = "Contract Name"
 
         flash_doc = st.session_state.get("flash_doc_no", None)
+        flash_key = st.session_state.get("flash_key", 0)
+        anim_name = f"row-flash-{flash_key}"
 
         header_html = "".join(
             f'<th style="padding:0.5rem 0.75rem; text-align:left; font-size:0.72rem; '
@@ -537,7 +540,7 @@ with col_table:
         for _, row in display_df.iterrows():
             is_flash = (flash_doc and row.get("purchasing_doc_no") == flash_doc)
             flash_style = (
-                'animation:row-flash 6s ease forwards;'
+                f'animation:{anim_name} 6s ease forwards;'
                 if is_flash else ''
             )
             cells = ""
@@ -563,7 +566,7 @@ with col_table:
         st.markdown(
             f"""
             <style>
-            @keyframes row-flash {{
+            @keyframes {anim_name} {{
                 0%   {{ background-color: #FFE3E1; }}
                 100% {{ background-color: transparent; }}
             }}
