@@ -495,7 +495,6 @@ with col_form:
 with col_table:
     df_saved = st.session_state.saved_data
     count = len(df_saved)
-    df_saved = df_saved.head(20)
 
     # Header row with badge
     st.markdown(
@@ -598,8 +597,13 @@ with col_table:
             }}
             .saved-table {{ width:100%; border-collapse:collapse; font-family:'Inter',sans-serif; }}
             .saved-table tr:hover td {{ background-color:#fafafa; }}
+            .saved-table thead th {{
+                position: sticky; top: 0;
+                background: #ffffff;
+                z-index: 1;
+            }}
             </style>
-            <div style="overflow-x:auto;">
+            <div style="overflow-x:auto; overflow-y:auto; max-height:396px;">
             <table class="saved-table">
               <thead><tr>{header_html}</tr></thead>
               <tbody>{rows_html}</tbody>
