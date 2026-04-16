@@ -429,41 +429,36 @@ with col_form:
         if new_doc_no and not new_doc_no.isdigit():
             st.error("เลขสัญญาใหม่ต้องเป็นตัวเลขเท่านั้น")
         else:
-            _save_overlay = st.empty()
-            _save_overlay.markdown(
+            _save_msg = st.empty()
+            _save_msg.markdown(
                 """
                 <style>
                 @keyframes flower-spin-save {
                     from { transform: rotate(0deg); }
                     to   { transform: rotate(360deg); }
                 }
-                .sv-overlay {
-                    position: fixed; inset: 0;
-                    background: #F4F0E8;
-                    z-index: 9999;
+                .sv-inline {
                     display: flex;
-                    flex-direction: column;
                     align-items: center;
-                    justify-content: center;
+                    gap: 0.5rem;
+                    padding: 0.4rem 0;
                 }
                 .sv-flower {
-                    font-size: 4rem;
                     display: inline-block;
                     animation: flower-spin-save 1.2s linear infinite;
+                    font-size: 1rem;
+                    line-height: 1;
                 }
                 .sv-text {
-                    color: #e8a347;
+                    color: #888;
                     font-size: 1rem;
-                    margin-top: 1.4rem;
                     font-family: 'Inter', sans-serif;
-                    font-weight: 600;
-                    letter-spacing: 0.1em;
-                    text-transform: uppercase;
+                    font-weight: 500;
                 }
                 </style>
-                <div class="sv-overlay">
+                <div class="sv-inline">
                     <span class="sv-flower">🌸</span>
-                    <div class="sv-text">Wait a moment...</div>
+                    <span class="sv-text">Wait a moment...</span>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -481,11 +476,11 @@ with col_form:
                 st.session_state.saved_data = df
                 st.session_state.flash_doc_no = doc_no
                 st.session_state.flash_key = int(datetime.now().timestamp() * 1000)
-                _save_overlay.empty()
+                _save_msg.empty()
                 st.toast(f"Saved — {doc_no}", icon="✅")
                 st.rerun()
             except Exception as e:
-                _save_overlay.empty()
+                _save_msg.empty()
                 st.error(f"Save failed: {e}")
 
 # ── RIGHT: TABLE ──
