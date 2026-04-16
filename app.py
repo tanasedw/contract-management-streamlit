@@ -467,6 +467,7 @@ with col_form:
 with col_table:
     df_saved = st.session_state.saved_data
     count = len(df_saved)
+    df_saved = df_saved.head(20)
 
     # Header row with badge
     st.markdown(
