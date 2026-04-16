@@ -283,8 +283,8 @@ def load_saved():
             "comment", "new_purchasing_doc_no", "update_at",
         ])
 
-def _save_to_delta(new_row: pd.DataFrame, opts: dict):
-    """Write to Delta Lake — runs in background thread."""
+def save_to_delta(new_row: pd.DataFrame, opts: dict):
+    """Write to Delta Lake synchronously — raises on failure."""
     table_path = f"{ONELAKE_BASE}/gold_manual_contract_status"
     try:
         (
@@ -308,9 +308,9 @@ def _save_to_delta(new_row: pd.DataFrame, opts: dict):
     except Exception:
         write_deltalake(table_path, new_row, mode="append", storage_options=opts)
 
-def save_status_async(doc_no: str, purchaser_status: str, comment: str, new_doc_no: str):
-    """Build row, fetch token in main thread, then fire background write."""
-    opts = storage_options()  # token must be fetched in main thread
+def save_status(doc_no: str, purchaser_status: str, comment: str, new_doc_no: str):
+    """Build row and write to Delta Lake — waits for completion before returning."""
+    opts = storage_options()
     new_row = pd.DataFrame([{
         "purchasing_doc_no":     doc_no,
         "user_status":           "",
@@ -319,7 +319,7 @@ def save_status_async(doc_no: str, purchaser_status: str, comment: str, new_doc_
         "new_purchasing_doc_no": new_doc_no,
         "update_at":             datetime.now(pytz.timezone("Asia/Bangkok")),
     }])
-    threading.Thread(target=_save_to_delta, args=(new_row, opts), daemon=True).start()
+    save_to_delta(new_row, opts)
     return new_row
 
 # ───────────────────────────────────────────
@@ -447,23 +447,24 @@ with col_form:
         if new_doc_no and not new_doc_no.isdigit():
             st.error("เลขสัญญาใหม่ต้องเป็นตัวเลขเท่านั้น")
         else:
-            try:
-                new_entry = save_status_async(doc_no, purchaser_status, comment, new_doc_no)
-                new_entry["update_at"] = new_entry["update_at"].dt.tz_localize(None)
-                df = st.session_state.saved_data
-                # Preserve existing user_status from email alert
-                existing_row = df[df["purchasing_doc_no"] == doc_no]
-                if not existing_row.empty and "user_status" in existing_row.columns:
-                    new_entry["user_status"] = existing_row.iloc[0]["user_status"]
-                df = df[df["purchasing_doc_no"] != doc_no]
-                df = pd.concat([new_entry, df], ignore_index=True)
-                st.session_state.saved_data = df
-                st.session_state.flash_doc_no = doc_no
-                st.session_state.flash_key = int(datetime.now().timestamp() * 1000)
-                st.toast(f"Saved — {doc_no}", icon="✅")
-                st.rerun()
-            except Exception as e:
-                st.error(f"Error: {e}")
+            with st.spinner("Saving..."):
+                try:
+                    new_entry = save_status(doc_no, purchaser_status, comment, new_doc_no)
+                    new_entry["update_at"] = new_entry["update_at"].dt.tz_localize(None)
+                    df = st.session_state.saved_data
+                    # Preserve existing user_status from email alert
+                    existing_row = df[df["purchasing_doc_no"] == doc_no]
+                    if not existing_row.empty and "user_status" in existing_row.columns:
+                        new_entry["user_status"] = existing_row.iloc[0]["user_status"]
+                    df = df[df["purchasing_doc_no"] != doc_no]
+                    df = pd.concat([new_entry, df], ignore_index=True)
+                    st.session_state.saved_data = df
+                    st.session_state.flash_doc_no = doc_no
+                    st.session_state.flash_key = int(datetime.now().timestamp() * 1000)
+                    st.toast(f"Saved — {doc_no}", icon="✅")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Save failed: {e}")
 
 # ── RIGHT: TABLE ──
 with col_table:
