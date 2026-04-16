@@ -81,7 +81,7 @@ def apply_style():
     /* Label */
     label, [data-testid="stWidgetLabel"] p {
         color: #888 !important;
-        font-size: 0.68rem !important;
+        font-size: 0.88rem !important;
         font-weight: 600 !important;
         text-transform: uppercase !important;
         letter-spacing: 0.1em !important;
