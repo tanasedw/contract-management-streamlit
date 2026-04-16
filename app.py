@@ -373,8 +373,17 @@ if st.session_state.saved_data is None:
         """,
         unsafe_allow_html=True,
     )
-    st.session_state.saved_data = load_saved()
-    load_all_docs()          # preload so form renders instantly
+    # Run both fetches in parallel to halve load time
+    results = {}
+    def _fetch_saved():
+        results["saved"] = load_saved()
+    def _fetch_docs():
+        results["docs"] = load_all_docs()
+    t1 = threading.Thread(target=_fetch_saved)
+    t2 = threading.Thread(target=_fetch_docs)
+    t1.start(); t2.start()
+    t1.join();  t2.join()
+    st.session_state.saved_data = results["saved"]
     _loading.empty()
 
 st.title("Contract Status")
