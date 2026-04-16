@@ -21,12 +21,12 @@ ONELAKE_BASE = (
 )
 
 PURCHASER_STATUS_OPTIONS = [
-    "Not Start (ยังไม่เริ่ม)",
-    "RFQ - Request for Quotation (ขอใบเสนอราคา)",
-    "Compared (เปรียบเทียบราคา)",
-    "RL - Recommend Letter (ใบเสนออนุมัติซื้อ)",
-    "OA Created (สร้างใบสั่งซื้อ)",
-    "Cancel OA (ยกเลิกออเดอร์)",
+    "Not Start",
+    "RFQ - Request for Quotation",
+    "Compared",
+    "RL - Recommend Letter",
+    "OA Created",
+    "Cancel OA",
 ]
 
 # ───────────────────────────────────────────
