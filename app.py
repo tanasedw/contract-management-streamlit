@@ -354,17 +354,30 @@ with col_form:
         placeholder="ค้นหา Doc No...",
     )
 
+    # Pre-fill form with previously saved values for the selected doc
+    existing = st.session_state.saved_data
+    existing_row = existing[existing["purchasing_doc_no"] == doc_no] if doc_no else pd.DataFrame()
+    if not existing_row.empty:
+        saved_status  = existing_row.iloc[0].get("purchaser_status", PURCHASER_STATUS_OPTIONS[0])
+        saved_comment = existing_row.iloc[0].get("comment", "")
+        saved_new_doc = existing_row.iloc[0].get("new_purchasing_doc_no", "")
+        status_index  = PURCHASER_STATUS_OPTIONS.index(saved_status) if saved_status in PURCHASER_STATUS_OPTIONS else 0
+    else:
+        saved_status, saved_comment, saved_new_doc, status_index = PURCHASER_STATUS_OPTIONS[0], "", "", 0
+
     st.markdown("<div style='height:0.4rem'></div>", unsafe_allow_html=True)
 
     purchaser_status = st.selectbox(
         "Purchaser Status",
         PURCHASER_STATUS_OPTIONS,
+        index=status_index,
     )
 
     st.markdown("<div style='height:0.4rem'></div>", unsafe_allow_html=True)
 
     comment = st.text_area(
         "Comment",
+        value=saved_comment or "",
         placeholder="หมายเหตุ / รายละเอียดเพิ่มเติม ...",
         height=100,
     )
@@ -373,6 +386,7 @@ with col_form:
 
     new_doc_no = st.text_input(
         "เลขสัญญาใหม่ (Purchasing Doc No ใหม่)",
+        value=saved_new_doc or "",
         placeholder="ตัวเลขเท่านั้น เช่น 4500012345",
     )
 
