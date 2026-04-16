@@ -272,6 +272,8 @@ def load_saved():
                 .dt.tz_localize(None)
             )
             df = df.sort_values("update_at", ascending=False)
+        # Deduplicate — keep latest row per doc (handles append-mode duplicates)
+        df = df.drop_duplicates(subset=["purchasing_doc_no"], keep="first")
         # Ensure all expected columns exist
         for col in ["comment", "new_purchasing_doc_no"]:
             if col not in df.columns:
@@ -284,29 +286,9 @@ def load_saved():
         ])
 
 def save_to_delta(new_row: pd.DataFrame, opts: dict):
-    """Write to Delta Lake synchronously — raises on failure."""
+    """Append row to Delta Lake — fast write, dedup handled on read."""
     table_path = f"{ONELAKE_BASE}/gold_manual_contract_status"
-    try:
-        (
-            DeltaTable(table_path, storage_options=opts)
-            .merge(
-                source=new_row,
-                predicate="s.purchasing_doc_no = t.purchasing_doc_no",
-                source_alias="s",
-                target_alias="t",
-            )
-            .when_matched_update({
-                "purchaser_status":      "s.purchaser_status",
-                "comment":               "s.comment",
-                "new_purchasing_doc_no": "s.new_purchasing_doc_no",
-                "update_at":             "s.update_at",
-                # user_status is intentionally excluded — managed by email alert
-            })
-            .when_not_matched_insert_all()
-            .execute()
-        )
-    except Exception:
-        write_deltalake(table_path, new_row, mode="append", storage_options=opts)
+    write_deltalake(table_path, new_row, mode="append", storage_options=opts)
 
 def save_status(doc_no: str, purchaser_status: str, comment: str, new_doc_no: str):
     """Build row and write to Delta Lake — waits for completion before returning."""
