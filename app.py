@@ -285,47 +285,14 @@ def load_saved():
             "comment", "new_purchasing_doc_no", "update_at",
         ])
 
-def _merge_dedup(new_row: pd.DataFrame, opts: dict):
-    """Background merge to keep OneLake deduplicated — user does not wait for this."""
+def _overwrite_to_delta(df: pd.DataFrame, opts: dict):
+    """Overwrite full table in background — no duplicates, no read needed."""
     table_path = f"{ONELAKE_BASE}/gold_manual_contract_status"
     try:
-        (
-            DeltaTable(table_path, storage_options=opts)
-            .merge(
-                source=new_row,
-                predicate="s.purchasing_doc_no = t.purchasing_doc_no",
-                source_alias="s",
-                target_alias="t",
-            )
-            .when_matched_update({
-                "purchaser_status":      "s.purchaser_status",
-                "comment":               "s.comment",
-                "new_purchasing_doc_no": "s.new_purchasing_doc_no",
-                "update_at":             "s.update_at",
-            })
-            .when_not_matched_delete()
-            .execute()
-        )
+        write_deltalake(table_path, df, mode="overwrite",
+                        schema_mode="overwrite", storage_options=opts)
     except Exception:
-        pass  # dedup on read handles correctness in the meantime
-
-def save_status(doc_no: str, purchaser_status: str, comment: str, new_doc_no: str):
-    """Append instantly (fast UI), then merge in background to keep OneLake clean."""
-    opts = storage_options()
-    new_row = pd.DataFrame([{
-        "purchasing_doc_no":     doc_no,
-        "user_status":           "",
-        "purchaser_status":      purchaser_status,
-        "comment":               comment,
-        "new_purchasing_doc_no": new_doc_no,
-        "update_at":             datetime.now(pytz.timezone("Asia/Bangkok")),
-    }])
-    table_path = f"{ONELAKE_BASE}/gold_manual_contract_status"
-    # Fast append — user waits only for this (~1s)
-    write_deltalake(table_path, new_row, mode="append", storage_options=opts)
-    # Background merge to remove duplicate — user does not wait
-    threading.Thread(target=_merge_dedup, args=(new_row, opts), daemon=True).start()
-    return new_row
+        pass
 
 # ───────────────────────────────────────────
 # UI CONFIG (must be first Streamlit call)
@@ -487,16 +454,34 @@ with col_form:
                 unsafe_allow_html=True,
             )
             try:
-                new_entry = save_status(doc_no, purchaser_status, comment, new_doc_no)
-                new_entry["update_at"] = new_entry["update_at"].dt.tz_localize(None)
-                df = st.session_state.saved_data
+                opts = storage_options()
+                # Build updated row
+                new_entry = pd.DataFrame([{
+                    "purchasing_doc_no":     doc_no,
+                    "user_status":           "",
+                    "purchaser_status":      purchaser_status,
+                    "comment":               comment,
+                    "new_purchasing_doc_no": new_doc_no,
+                    "update_at":             datetime.now(pytz.timezone("Asia/Bangkok")).replace(tzinfo=None),
+                }])
                 # Preserve existing user_status from email alert
+                df = st.session_state.saved_data
                 existing_row = df[df["purchasing_doc_no"] == doc_no]
                 if not existing_row.empty and "user_status" in existing_row.columns:
                     new_entry["user_status"] = existing_row.iloc[0]["user_status"]
-                df = df[df["purchasing_doc_no"] != doc_no]
-                df = pd.concat([new_entry, df], ignore_index=True)
-                st.session_state.saved_data = df
+                # Build full updated df (no duplicates)
+                updated_df = pd.concat(
+                    [new_entry, df[df["purchasing_doc_no"] != doc_no]],
+                    ignore_index=True,
+                )
+                # Fire background overwrite — write-only, no read, fast
+                threading.Thread(
+                    target=_overwrite_to_delta,
+                    args=(updated_df.copy(), opts),
+                    daemon=False,
+                ).start()
+                # Update UI immediately
+                st.session_state.saved_data = updated_df
                 st.session_state.flash_doc_no = doc_no
                 st.session_state.flash_key = int(datetime.now().timestamp() * 1000)
                 _save_msg.empty()
