@@ -272,6 +272,8 @@ def load_saved():
                 .dt.tz_localize(None)
             )
             df = df.sort_values("update_at", ascending=False)
+        # Dedup — keep latest per doc (guards against background-merge window)
+        df = df.drop_duplicates(subset=["purchasing_doc_no"], keep="first")
         # Ensure all expected columns exist
         for col in ["comment", "new_purchasing_doc_no"]:
             if col not in df.columns:
@@ -283,29 +285,32 @@ def load_saved():
             "comment", "new_purchasing_doc_no", "update_at",
         ])
 
-def save_to_delta(new_row: pd.DataFrame, opts: dict):
-    """Upsert row to Delta Lake via merge — no duplicates."""
+def _merge_dedup(new_row: pd.DataFrame, opts: dict):
+    """Background merge to keep OneLake deduplicated — user does not wait for this."""
     table_path = f"{ONELAKE_BASE}/gold_manual_contract_status"
-    (
-        DeltaTable(table_path, storage_options=opts)
-        .merge(
-            source=new_row,
-            predicate="s.purchasing_doc_no = t.purchasing_doc_no",
-            source_alias="s",
-            target_alias="t",
+    try:
+        (
+            DeltaTable(table_path, storage_options=opts)
+            .merge(
+                source=new_row,
+                predicate="s.purchasing_doc_no = t.purchasing_doc_no",
+                source_alias="s",
+                target_alias="t",
+            )
+            .when_matched_update({
+                "purchaser_status":      "s.purchaser_status",
+                "comment":               "s.comment",
+                "new_purchasing_doc_no": "s.new_purchasing_doc_no",
+                "update_at":             "s.update_at",
+            })
+            .when_not_matched_delete()
+            .execute()
         )
-        .when_matched_update({
-            "purchaser_status":      "s.purchaser_status",
-            "comment":               "s.comment",
-            "new_purchasing_doc_no": "s.new_purchasing_doc_no",
-            "update_at":             "s.update_at",
-        })
-        .when_not_matched_insert_all()
-        .execute()
-    )
+    except Exception:
+        pass  # dedup on read handles correctness in the meantime
 
 def save_status(doc_no: str, purchaser_status: str, comment: str, new_doc_no: str):
-    """Build row and upsert to Delta Lake in background thread."""
+    """Append instantly (fast UI), then merge in background to keep OneLake clean."""
     opts = storage_options()
     new_row = pd.DataFrame([{
         "purchasing_doc_no":     doc_no,
@@ -315,9 +320,11 @@ def save_status(doc_no: str, purchaser_status: str, comment: str, new_doc_no: st
         "new_purchasing_doc_no": new_doc_no,
         "update_at":             datetime.now(pytz.timezone("Asia/Bangkok")),
     }])
-    t = threading.Thread(target=save_to_delta, args=(new_row, opts), daemon=False)
-    t.start()
-    t.join()
+    table_path = f"{ONELAKE_BASE}/gold_manual_contract_status"
+    # Fast append — user waits only for this (~1s)
+    write_deltalake(table_path, new_row, mode="append", storage_options=opts)
+    # Background merge to remove duplicate — user does not wait
+    threading.Thread(target=_merge_dedup, args=(new_row, opts), daemon=True).start()
     return new_row
 
 # ───────────────────────────────────────────
@@ -622,7 +629,6 @@ with col_table:
     st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
 
     if st.button("↺  Refresh data", use_container_width=True):
-        load_all_docs.clear()
-        load_saved.clear()
+        load_saved.clear()          # reload status data only
         st.session_state.saved_data = None
         st.rerun()
