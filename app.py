@@ -150,7 +150,7 @@ def apply_style():
         background-color: rgba(255,255,255,0.05) !important;
         border: 1px solid rgba(255,255,255,0.15) !important;
         border-radius: 12px !important;
-        color: #ffffff !important;
+        color: #a855f7 !important;
         font-family: 'Sora', sans-serif !important;
         font-size: 0.88rem !important;
         backdrop-filter: blur(10px) !important;
@@ -166,7 +166,7 @@ def apply_style():
         background-color: rgba(255,255,255,0.05) !important;
         border: 1px solid rgba(255,255,255,0.15) !important;
         border-radius: 12px !important;
-        color: #ffffff !important;
+        color: #a855f7 !important;
         font-family: 'Sora', sans-serif !important;
         font-size: 0.88rem !important;
         backdrop-filter: blur(10px) !important;
