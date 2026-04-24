@@ -1,7 +1,7 @@
 # Contract Management Streamlit — CLAUDE.md
 
 ## Current stable version
-Commit: `65d4710` — "Chore: organize project files — gitignore pycache, rename icon to loading_wizard.png"
+Commit: `ab3fe1d` — "Docs: update CLAUDE.md with full session history, project structure, and current stable commit"
 
 ## Stack
 - **Frontend**: Streamlit (Python), deployed on Streamlit Community Cloud
