@@ -36,16 +36,37 @@ PURCHASER_STATUS_OPTIONS = [
 def apply_style():
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap');
 
-    html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
+    /* Aurora animated background */
+    .stApp {
+        font-family: 'Sora', sans-serif !important;
+        color: #ffffff !important;
+        background-color: #0f0f1a !important;
+    }
+    .stApp::before {
+        content: '';
+        position: fixed;
+        inset: -50%;
+        z-index: 0;
+        background:
+            radial-gradient(ellipse at 20% 30%, rgba(6,182,212,0.35) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 20%, rgba(168,85,247,0.35) 0%, transparent 50%),
+            radial-gradient(ellipse at 40% 70%, rgba(236,72,153,0.3) 0%, transparent 50%),
+            radial-gradient(ellipse at 70% 80%, rgba(59,130,246,0.25) 0%, transparent 50%);
+        animation: aurora 15s ease-in-out infinite alternate;
+        pointer-events: none;
+    }
+    @keyframes aurora {
+        0%   { transform: translate(0,0) rotate(0deg) scale(1); }
+        33%  { transform: translate(5%,-5%) rotate(3deg) scale(1.05); }
+        66%  { transform: translate(-3%,3%) rotate(-2deg) scale(0.98); }
+        100% { transform: translate(2%,-2%) rotate(1deg) scale(1.02); }
     }
 
-    /* Background */
-    .stApp {
-        background-color: #ffffff;
-        color: #0f0f0f;
+    html, body, [class*="css"] {
+        font-family: 'Sora', sans-serif !important;
+        color: #ffffff !important;
     }
 
     /* Hide default UI */
@@ -53,10 +74,13 @@ def apply_style():
 
     /* Title */
     h1 {
-        font-family: 'Inter', sans-serif !important;
+        font-family: 'Sora', sans-serif !important;
         font-weight: 700 !important;
         font-size: 1.5rem !important;
-        color: #0f0f0f !important;
+        background: linear-gradient(135deg, #ffffff, #06b6d4, #a855f7) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
         letter-spacing: -0.03em !important;
         margin-bottom: 0.1rem !important;
     }
@@ -64,16 +88,16 @@ def apply_style():
     /* Caption */
     .element-container p small,
     [data-testid="stCaptionContainer"] p {
-        color: #999 !important;
+        color: rgba(255,255,255,0.5) !important;
         font-size: 0.78rem !important;
     }
 
     /* Subheader / section label */
     h3 {
-        font-family: 'Inter', sans-serif !important;
+        font-family: 'Sora', sans-serif !important;
         font-weight: 600 !important;
         font-size: 0.68rem !important;
-        color: #aaa !important;
+        color: rgba(255,255,255,0.5) !important;
         text-transform: uppercase !important;
         letter-spacing: 0.12em !important;
         margin-bottom: 1rem !important;
@@ -81,7 +105,7 @@ def apply_style():
 
     /* Label */
     label, [data-testid="stWidgetLabel"] p {
-        color: #888 !important;
+        color: rgba(255,255,255,0.6) !important;
         font-size: 0.88rem !important;
         font-weight: 600 !important;
         text-transform: uppercase !important;
@@ -90,133 +114,116 @@ def apply_style():
 
     /* Selectbox */
     .stSelectbox > div > div {
-        background-color: #f7f7f8 !important;
-        border: 1.5px solid #e8e8e8 !important;
-        border-radius: 10px !important;
-        color: #0f0f0f !important;
-        font-family: 'Inter', sans-serif !important;
+        background-color: rgba(255,255,255,0.05) !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
+        border-radius: 12px !important;
+        color: #ffffff !important;
+        font-family: 'Sora', sans-serif !important;
         font-size: 0.88rem !important;
-    }
-    .stSelectbox > div > div:hover {
-        border-color: #c8c8c8 !important;
+        backdrop-filter: blur(10px) !important;
     }
     .stSelectbox > div > div:focus-within {
-        border-color: #0f0f0f !important;
-        box-shadow: 0 0 0 2px rgba(15,15,15,0.08) !important;
+        border-color: #06b6d4 !important;
+        box-shadow: 0 0 0 2px rgba(6,182,212,0.3) !important;
     }
-    .stSelectbox [data-baseweb="select"] input {
-        color: #0f0f0f !important;
-    }
+    .stSelectbox [data-baseweb="select"] input { color: #ffffff !important; }
     [data-baseweb="popover"] {
-        background-color: #ffffff !important;
-        border: 1px solid #e8e8e8 !important;
-        border-radius: 10px !important;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important;
+        background-color: rgba(15,15,26,0.95) !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
+        border-radius: 12px !important;
+        backdrop-filter: blur(20px) !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important;
     }
-    [data-baseweb="menu"] {
-        background-color: #ffffff !important;
-    }
+    [data-baseweb="menu"] { background-color: transparent !important; }
     [data-baseweb="menu"] li {
-        color: #0f0f0f !important;
-        font-family: 'Inter', sans-serif !important;
+        color: rgba(255,255,255,0.8) !important;
+        font-family: 'Sora', sans-serif !important;
         font-size: 0.85rem !important;
     }
     [data-baseweb="menu"] li:hover {
-        background-color: #f7f7f8 !important;
+        background-color: rgba(6,182,212,0.15) !important;
+        color: #ffffff !important;
     }
 
     /* Text area */
     .stTextArea textarea {
-        background-color: #f7f7f8 !important;
-        border: 1.5px solid #e8e8e8 !important;
-        border-radius: 10px !important;
-        color: #0f0f0f !important;
-        font-family: 'Inter', sans-serif !important;
+        background-color: rgba(255,255,255,0.05) !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
+        border-radius: 12px !important;
+        color: #ffffff !important;
+        font-family: 'Sora', sans-serif !important;
         font-size: 0.88rem !important;
+        backdrop-filter: blur(10px) !important;
     }
     .stTextArea textarea:focus {
-        border-color: #0f0f0f !important;
-        box-shadow: 0 0 0 2px rgba(15,15,15,0.08) !important;
+        border-color: #06b6d4 !important;
+        box-shadow: 0 0 0 2px rgba(6,182,212,0.3) !important;
     }
-    .stTextArea textarea::placeholder {
-        color: #bbb !important;
-    }
+    .stTextArea textarea::placeholder { color: rgba(255,255,255,0.3) !important; }
 
     /* Text input */
     .stTextInput input {
-        background-color: #f7f7f8 !important;
-        border: 1.5px solid #e8e8e8 !important;
-        border-radius: 10px !important;
-        color: #0f0f0f !important;
-        font-family: 'DM Mono', monospace !important;
+        background-color: rgba(255,255,255,0.05) !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
+        border-radius: 12px !important;
+        color: #ffffff !important;
+        font-family: 'Sora', sans-serif !important;
         font-size: 0.88rem !important;
+        backdrop-filter: blur(10px) !important;
     }
     .stTextInput input:focus {
-        border-color: #0f0f0f !important;
-        box-shadow: 0 0 0 2px rgba(15,15,15,0.08) !important;
+        border-color: #06b6d4 !important;
+        box-shadow: 0 0 0 2px rgba(6,182,212,0.3) !important;
     }
-    .stTextInput input::placeholder {
-        color: #bbb !important;
-    }
+    .stTextInput input::placeholder { color: rgba(255,255,255,0.3) !important; }
 
     /* Button Save (primary) */
     .stButton > button[kind="primary"] {
-        background-color: #0f0f0f !important;
+        background: linear-gradient(135deg, #06b6d4, #a855f7) !important;
         color: #ffffff !important;
         border: none !important;
-        border-radius: 10px !important;
-        font-family: 'Inter', sans-serif !important;
+        border-radius: 12px !important;
+        font-family: 'Sora', sans-serif !important;
         font-weight: 600 !important;
         font-size: 0.88rem !important;
-        letter-spacing: 0.01em !important;
-        padding: 0.55rem 1rem !important;
-        transition: all 0.2s !important;
+        transition: all 0.3s ease !important;
     }
     .stButton > button[kind="primary"]:hover {
-        background-color: #333 !important;
         transform: translateY(-1px) !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+        box-shadow: 0 0 24px rgba(6,182,212,0.5), 0 0 48px rgba(168,85,247,0.3) !important;
     }
 
     /* Button Refresh (secondary) */
     .stButton > button[kind="secondary"] {
-        background-color: #ffffff !important;
-        color: #666 !important;
-        border: 1.5px solid #e8e8e8 !important;
-        border-radius: 10px !important;
-        font-family: 'Inter', sans-serif !important;
+        background-color: rgba(255,255,255,0.05) !important;
+        color: rgba(255,255,255,0.8) !important;
+        border: 1px solid rgba(255,255,255,0.2) !important;
+        border-radius: 12px !important;
+        font-family: 'Sora', sans-serif !important;
         font-size: 0.85rem !important;
-        transition: all 0.15s !important;
+        backdrop-filter: blur(10px) !important;
+        transition: all 0.2s ease !important;
     }
     .stButton > button[kind="secondary"]:hover {
-        border-color: #0f0f0f !important;
-        color: #0f0f0f !important;
-    }
-
-    /* Dataframe */
-    .stDataFrame {
-        border: 1.5px solid #e8e8e8 !important;
-        border-radius: 12px !important;
-        overflow: hidden !important;
+        background-color: rgba(255,255,255,0.1) !important;
+        color: #ffffff !important;
     }
 
     /* Alert */
     .stAlert {
-        background-color: #f7f7f8 !important;
-        border: 1px solid #e8e8e8 !important;
-        border-radius: 10px !important;
-        color: #666 !important;
+        background-color: rgba(255,255,255,0.05) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        border-radius: 12px !important;
+        color: rgba(255,255,255,0.8) !important;
     }
 
     /* Spinner */
-    .stSpinner > div {
-        border-top-color: #0f0f0f !important;
-    }
+    .stSpinner > div { border-top-color: #06b6d4 !important; }
 
     /* Scrollbar */
     ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: #ffffff; }
-    ::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -316,7 +323,7 @@ if st.session_state.saved_data is None:
         }
         .fl-overlay {
             position: fixed; inset: 0;
-            background: #F4F0E8;
+            background: #0f0f1a;
             z-index: 9999;
             display: flex;
             flex-direction: column;
@@ -329,7 +336,7 @@ if st.session_state.saved_data is None:
             animation: flower-spin 1.2s linear infinite;
         }
         .fl-text {
-            color: #e8a347;
+            color: #06b6d4;
             font-size: 1rem;
             margin-top: 1.4rem;
             font-family: 'Inter', sans-serif;
@@ -557,7 +564,7 @@ with col_table:
         header_html = "".join(
             f'<th style="padding:0.5rem 0.75rem; text-align:left; font-size:0.72rem; '
             f'font-weight:700; text-transform:uppercase; letter-spacing:0.08em; '
-            f'color:#888; border-bottom:1.5px solid #e8e8e8; white-space:nowrap;">'
+            f'color:rgba(255,255,255,0.5); border-bottom:1px solid rgba(255,255,255,0.1); white-space:nowrap;">'
             f'{col_labels.get(c, c)}</th>'
             for c in display_df.columns
         )
@@ -583,7 +590,7 @@ with col_table:
                     val = str(val)
                 cells += (
                     f'<td style="padding:0.45rem 0.75rem; font-size:0.82rem; '
-                    f'color:#0f0f0f; border-bottom:1px solid #f0f0f0; '
+                    f'color:rgba(255,255,255,0.85); border-bottom:1px solid rgba(255,255,255,0.08); '
                     f'white-space:nowrap; max-width:200px; overflow:hidden; '
                     f'text-overflow:ellipsis;">{val}</td>'
                 )
@@ -596,8 +603,8 @@ with col_table:
                 0%   {{ background-color: #FFE3E1; }}
                 100% {{ background-color: transparent; }}
             }}
-            .saved-table {{ width:100%; border-collapse:collapse; font-family:'Inter',sans-serif; }}
-            .saved-table tr:hover td {{ background-color:#fafafa; }}
+            .saved-table {{ width:100%; border-collapse:collapse; font-family:'Sora',sans-serif; }}
+            .saved-table tr:hover td {{ background-color:rgba(6,182,212,0.08); }}
             </style>
             <div style="overflow-x:auto;">
             <table class="saved-table">
