@@ -1,7 +1,7 @@
 # Contract Management Streamlit — CLAUDE.md
 
 ## Current stable version
-Commit: `590ecd3` — "Style: increase loading icon size to 150x150px"
+Commit: `65d4710` — "Chore: organize project files — gitignore pycache, rename icon to loading_wizard.png"
 
 ## Stack
 - **Frontend**: Streamlit (Python), deployed on Streamlit Community Cloud
@@ -32,7 +32,7 @@ Commit: `590ecd3` — "Style: increase loading icon size to 150x150px"
 
 ### Loading overlay
 - Background: `#0f0f1a` (matches aurora theme)
-- Spinner: `icon/png1.png` snowman wizard encoded as base64, 150×150px, CSS rotate animation
+- Spinner: `icon/loading_wizard.png` snowman wizard encoded as base64, 150×150px, CSS rotate animation
 - Text: "WAIT A MOMENT..." in cyan `#06b6d4`
 
 ### Table display
@@ -57,3 +57,30 @@ Completed
 
 ## Form auto-fill
 When a Purchasing Doc No is selected, the form pre-fills Purchaser Status, Comment, and เลขสัญญาใหม่ from the last saved values for that doc.
+
+## Project structure
+```
+app.py                          # main Streamlit app (all logic in one file)
+requirements.txt                # Python dependencies
+README.md                       # project overview
+CLAUDE.md                       # this file — architecture notes for Claude
+.gitignore                      # excludes secrets.toml, __pycache__, *.pyc
+.streamlit/secrets.toml         # Azure AD credentials (gitignored)
+icon/loading_wizard.png         # snowman wizard PNG — base64-encoded and embedded in app.py
+style_reference/                # design reference HTMLs (not used at runtime)
+  02-neumorphism.html           # tested, reverted
+  06-aurora-mesh-gradient.html  # current theme reference
+.devcontainer/devcontainer.json # VS Code dev container config
+```
+
+## Session history (key decisions)
+- **Purchaser Status**: English-only options (removed Thai); added "Completed" for done contracts
+- **Font sizes**: Labels and section headers enlarged via CSS in `apply_style()`
+- **Form auto-fill**: Selecting a Purchasing Doc No pre-fills last saved Status/Comment/เลขสัญญาใหม่
+- **Save speed**: Full in-memory overwrite (`write_deltalake(mode="overwrite")`) in background thread — no read, no duplicates, instant UI
+- **Load speed**: Parallel threads for `load_saved()` + `load_all_docs()` on first load; full-page overlay hides raw Streamlit spinner
+- **Row flash**: Pink `#FFE3E1` for 6s after save; unique `@keyframes` name per save (timestamp) forces browser replay on repeat saves
+- **Style evolution**: default → neumorphism (tested, reverted) → aurora mesh gradient (current)
+- **Loading icon**: pink flower emoji → snowman wizard PNG `icon/loading_wizard.png` at 150×150px
+- **Input text color**: Comment + เลขสัญญาใหม่ boxes use `#a855f7` purple
+- **File cleanup**: removed `__pycache__/`, added to `.gitignore`; deleted stale branches `style/neumorphism` and `style/aurora`
