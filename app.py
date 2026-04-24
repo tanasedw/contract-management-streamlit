@@ -36,16 +36,31 @@ PURCHASER_STATUS_OPTIONS = [
 def apply_style():
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+    :root {
+        --neu-bg:     #e0e5ec;
+        --neu-text:   #2d3748;
+        --neu-muted:  #718096;
+        --neu-accent: #6366f1;
+        --neu-light:  #ffffff;
+        --neu-dark:   #a3b1c6;
+        --neu-flat:   6px 6px 12px #a3b1c6, -6px -6px 12px #ffffff;
+        --neu-pressed: inset 4px 4px 8px #a3b1c6, inset -4px -4px 8px #ffffff;
+        --neu-convex:  6px 6px 12px #a3b1c6, -6px -6px 12px #ffffff,
+                       inset 2px 2px 4px #ffffff, inset -2px -2px 4px rgba(163,177,198,0.3);
+    }
 
     html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        background-color: var(--neu-bg) !important;
+        color: var(--neu-text) !important;
     }
 
     /* Background */
     .stApp {
-        background-color: #ffffff;
-        color: #0f0f0f;
+        background-color: var(--neu-bg) !important;
+        color: var(--neu-text) !important;
     }
 
     /* Hide default UI */
@@ -53,10 +68,10 @@ def apply_style():
 
     /* Title */
     h1 {
-        font-family: 'Inter', sans-serif !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-weight: 700 !important;
         font-size: 1.5rem !important;
-        color: #0f0f0f !important;
+        color: var(--neu-text) !important;
         letter-spacing: -0.03em !important;
         margin-bottom: 0.1rem !important;
     }
@@ -64,16 +79,16 @@ def apply_style():
     /* Caption */
     .element-container p small,
     [data-testid="stCaptionContainer"] p {
-        color: #999 !important;
+        color: var(--neu-muted) !important;
         font-size: 0.78rem !important;
     }
 
-    /* Subheader / section label */
+    /* Subheader */
     h3 {
-        font-family: 'Inter', sans-serif !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-weight: 600 !important;
         font-size: 0.68rem !important;
-        color: #aaa !important;
+        color: var(--neu-muted) !important;
         text-transform: uppercase !important;
         letter-spacing: 0.12em !important;
         margin-bottom: 1rem !important;
@@ -81,7 +96,7 @@ def apply_style():
 
     /* Label */
     label, [data-testid="stWidgetLabel"] p {
-        color: #888 !important;
+        color: var(--neu-muted) !important;
         font-size: 0.88rem !important;
         font-weight: 600 !important;
         text-transform: uppercase !important;
@@ -90,133 +105,126 @@ def apply_style():
 
     /* Selectbox */
     .stSelectbox > div > div {
-        background-color: #f7f7f8 !important;
-        border: 1.5px solid #e8e8e8 !important;
-        border-radius: 10px !important;
-        color: #0f0f0f !important;
-        font-family: 'Inter', sans-serif !important;
+        background-color: var(--neu-bg) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        box-shadow: var(--neu-pressed) !important;
+        color: var(--neu-text) !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-size: 0.88rem !important;
     }
-    .stSelectbox > div > div:hover {
-        border-color: #c8c8c8 !important;
-    }
     .stSelectbox > div > div:focus-within {
-        border-color: #0f0f0f !important;
-        box-shadow: 0 0 0 2px rgba(15,15,15,0.08) !important;
+        box-shadow: var(--neu-pressed), 0 0 0 2px var(--neu-accent) !important;
     }
     .stSelectbox [data-baseweb="select"] input {
-        color: #0f0f0f !important;
+        color: var(--neu-text) !important;
     }
     [data-baseweb="popover"] {
-        background-color: #ffffff !important;
-        border: 1px solid #e8e8e8 !important;
-        border-radius: 10px !important;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important;
+        background-color: var(--neu-bg) !important;
+        border: none !important;
+        border-radius: 14px !important;
+        box-shadow: var(--neu-flat) !important;
     }
     [data-baseweb="menu"] {
-        background-color: #ffffff !important;
+        background-color: var(--neu-bg) !important;
     }
     [data-baseweb="menu"] li {
-        color: #0f0f0f !important;
-        font-family: 'Inter', sans-serif !important;
+        color: var(--neu-text) !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-size: 0.85rem !important;
     }
     [data-baseweb="menu"] li:hover {
-        background-color: #f7f7f8 !important;
+        background-color: rgba(99,102,241,0.08) !important;
     }
 
     /* Text area */
     .stTextArea textarea {
-        background-color: #f7f7f8 !important;
-        border: 1.5px solid #e8e8e8 !important;
-        border-radius: 10px !important;
-        color: #0f0f0f !important;
-        font-family: 'Inter', sans-serif !important;
+        background-color: var(--neu-bg) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        box-shadow: var(--neu-pressed) !important;
+        color: var(--neu-text) !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-size: 0.88rem !important;
     }
     .stTextArea textarea:focus {
-        border-color: #0f0f0f !important;
-        box-shadow: 0 0 0 2px rgba(15,15,15,0.08) !important;
+        box-shadow: var(--neu-pressed), 0 0 0 2px var(--neu-accent) !important;
+        outline: none !important;
     }
-    .stTextArea textarea::placeholder {
-        color: #bbb !important;
-    }
+    .stTextArea textarea::placeholder { color: var(--neu-muted) !important; }
 
     /* Text input */
     .stTextInput input {
-        background-color: #f7f7f8 !important;
-        border: 1.5px solid #e8e8e8 !important;
-        border-radius: 10px !important;
-        color: #0f0f0f !important;
-        font-family: 'DM Mono', monospace !important;
+        background-color: var(--neu-bg) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        box-shadow: var(--neu-pressed) !important;
+        color: var(--neu-text) !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-size: 0.88rem !important;
     }
     .stTextInput input:focus {
-        border-color: #0f0f0f !important;
-        box-shadow: 0 0 0 2px rgba(15,15,15,0.08) !important;
+        box-shadow: var(--neu-pressed), 0 0 0 2px var(--neu-accent) !important;
+        outline: none !important;
     }
-    .stTextInput input::placeholder {
-        color: #bbb !important;
-    }
+    .stTextInput input::placeholder { color: var(--neu-muted) !important; }
 
     /* Button Save (primary) */
     .stButton > button[kind="primary"] {
-        background-color: #0f0f0f !important;
-        color: #ffffff !important;
+        background-color: var(--neu-bg) !important;
+        color: var(--neu-accent) !important;
         border: none !important;
-        border-radius: 10px !important;
-        font-family: 'Inter', sans-serif !important;
+        border-radius: 12px !important;
+        box-shadow: var(--neu-convex) !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-weight: 600 !important;
         font-size: 0.88rem !important;
-        letter-spacing: 0.01em !important;
-        padding: 0.55rem 1rem !important;
-        transition: all 0.2s !important;
+        transition: all 0.2s ease !important;
     }
     .stButton > button[kind="primary"]:hover {
-        background-color: #333 !important;
-        transform: translateY(-1px) !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+        box-shadow: 8px 8px 16px #a3b1c6, -8px -8px 16px #ffffff,
+                    inset 2px 2px 4px #ffffff, inset -2px -2px 4px rgba(163,177,198,0.3) !important;
+    }
+    .stButton > button[kind="primary"]:active {
+        box-shadow: var(--neu-pressed) !important;
     }
 
     /* Button Refresh (secondary) */
     .stButton > button[kind="secondary"] {
-        background-color: #ffffff !important;
-        color: #666 !important;
-        border: 1.5px solid #e8e8e8 !important;
-        border-radius: 10px !important;
-        font-family: 'Inter', sans-serif !important;
+        background-color: var(--neu-bg) !important;
+        color: var(--neu-muted) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        box-shadow: var(--neu-flat) !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-size: 0.85rem !important;
-        transition: all 0.15s !important;
+        transition: all 0.2s ease !important;
     }
     .stButton > button[kind="secondary"]:hover {
-        border-color: #0f0f0f !important;
-        color: #0f0f0f !important;
+        color: var(--neu-accent) !important;
     }
-
-    /* Dataframe */
-    .stDataFrame {
-        border: 1.5px solid #e8e8e8 !important;
-        border-radius: 12px !important;
-        overflow: hidden !important;
+    .stButton > button[kind="secondary"]:active {
+        box-shadow: var(--neu-pressed) !important;
     }
 
     /* Alert */
     .stAlert {
-        background-color: #f7f7f8 !important;
-        border: 1px solid #e8e8e8 !important;
-        border-radius: 10px !important;
-        color: #666 !important;
+        background-color: var(--neu-bg) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        box-shadow: var(--neu-flat) !important;
+        color: var(--neu-muted) !important;
     }
 
     /* Spinner */
     .stSpinner > div {
-        border-top-color: #0f0f0f !important;
+        border-top-color: var(--neu-accent) !important;
     }
 
     /* Scrollbar */
     ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: #ffffff; }
-    ::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 10px; }
+    ::-webkit-scrollbar-track { background: var(--neu-bg); }
+    ::-webkit-scrollbar-thumb { background: var(--neu-dark); border-radius: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -316,7 +324,7 @@ if st.session_state.saved_data is None:
         }
         .fl-overlay {
             position: fixed; inset: 0;
-            background: #F4F0E8;
+            background: #e0e5ec;
             z-index: 9999;
             display: flex;
             flex-direction: column;
@@ -329,10 +337,10 @@ if st.session_state.saved_data is None:
             animation: flower-spin 1.2s linear infinite;
         }
         .fl-text {
-            color: #e8a347;
+            color: #6366f1;
             font-size: 1rem;
             margin-top: 1.4rem;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-weight: 600;
             letter-spacing: 0.1em;
             text-transform: uppercase;
@@ -596,8 +604,8 @@ with col_table:
                 0%   {{ background-color: #FFE3E1; }}
                 100% {{ background-color: transparent; }}
             }}
-            .saved-table {{ width:100%; border-collapse:collapse; font-family:'Inter',sans-serif; }}
-            .saved-table tr:hover td {{ background-color:#fafafa; }}
+            .saved-table {{ width:100%; border-collapse:collapse; font-family:'Plus Jakarta Sans',sans-serif; }}
+            .saved-table tr:hover td {{ background-color:rgba(99,102,241,0.05); }}
             </style>
             <div style="overflow-x:auto;">
             <table class="saved-table">
